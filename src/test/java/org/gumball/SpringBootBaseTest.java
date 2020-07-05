@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-public
-class SpringBootBaseTest {
+public class SpringBootBaseTest {
 
     static {
         // Instantiate a JFXPanel to bootstrap the javaFX stuff.
