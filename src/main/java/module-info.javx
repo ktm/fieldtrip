@@ -22,4 +22,5 @@ module org.gumball {
     opens org.gumball.controllers to javafx.fxml, spring.core, spring.beans;
     opens org.gumball.services to spring.data.jpa, spring.core, spring.beans;
     opens org.gumball.entity to org.hibernate.orm.core, spring.core;
+    opens org.gumball.repository to org.hibernate.orm.core, spring.core;
 }

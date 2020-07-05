@@ -2,6 +2,7 @@ package org.gumball;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.event.WeakEventHandler;
 import javafx.fxml.FXMLLoader;
@@ -11,8 +12,10 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import javafx.stage.WindowEvent;
 import org.controlsfx.control.HiddenSidesPane;
 import org.gumball.events.EventBus;
+import org.gumball.events.EventTypes;
 import org.gumball.events.LoadViewEvent;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -25,21 +28,21 @@ import java.util.Map;
  * JavaFX App
  */
 public class App extends Application {
-    private Map<String, Parent> VIEW_MAP = new HashMap<>();
+    private final Map<String, Parent> VIEW_MAP = new HashMap<>();
     private ConfigurableApplicationContext springContext;
+    private final ViewLoadHandler viewLoadHandler = new ViewLoadHandler();
+    private final HiddenSidesPane sidePane = new HiddenSidesPane();
     private EventBus eventBus;
-    private ViewLoadHandler viewLoadHandler = new ViewLoadHandler();
-    private HiddenSidesPane sidePane = new HiddenSidesPane();
 
     @Override
-    public void init() throws Exception {
+    public void init() {
         springContext = new SpringApplicationBuilder(SpringBooter.class).run();
-        eventBus = (EventBus)springContext.getBean("eventBus");
-        eventBus.addListener(LoadViewEvent.class, new WeakEventHandler<>(viewLoadHandler));
+        eventBus = (EventBus) springContext.getBean("eventBus");
+        eventBus.addListener(EventTypes.LOAD_VIEW, new WeakEventHandler(viewLoadHandler));
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         this.springContext.close();
         Platform.exit();
     }
@@ -68,7 +71,8 @@ public class App extends Application {
             p = loadFXML(fxml);
             VIEW_MAP.put(fxml, p);
         }
-
+        Event showing = new Event(fxml, null, EventTypes.SHOW_VIEW);
+        eventBus.fireEvent(showing);
         sidePane.setContent(p);
     }
 
@@ -78,7 +82,7 @@ public class App extends Application {
         return fxmlLoader.load();
     }
 
-    class ViewLoadHandler implements EventHandler<LoadViewEvent> {
+    public class ViewLoadHandler implements EventHandler<LoadViewEvent> {
         @Override
         public void handle(LoadViewEvent loadViewEvent) {
             try {

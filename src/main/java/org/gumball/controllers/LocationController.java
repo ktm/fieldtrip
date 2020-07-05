@@ -1,21 +1,59 @@
 package org.gumball.controllers;
 
-import java.io.IOException;
+import javafx.collections.FXCollections;
+import javafx.event.Event;
+import javafx.event.EventHandler;
+import javafx.event.WeakEventHandler;
 import javafx.fxml.FXML;
-import org.gumball.App;
+import javafx.fxml.Initializable;
+import javafx.scene.control.ListView;
+import org.gumball.entity.Location;
 import org.gumball.events.EventBus;
+import org.gumball.events.EventTypes;
 import org.gumball.events.LoadViewEvent;
+import org.gumball.services.FieldTripService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.net.URL;
+import java.util.List;
+import java.util.ResourceBundle;
+
 @Component
-public class LocationController {
+public class LocationController implements Initializable {
+    public static final String VIEW_NAME = "locations";
+
     @Autowired
     EventBus eventBus;
 
+    @Autowired
+    FieldTripService fieldTripService;
+
     @FXML
-    private void switchToDashboard() throws IOException {
+    ListView<Location> locationsListView = new ListView<>();
+
+    private final ViewHandler viewHandler = new ViewHandler();
+
+    @FXML
+    private void switchToDashboard() {
         LoadViewEvent playEvent = new LoadViewEvent("dashboard");
         eventBus.fireEvent(playEvent);
+    }
+
+    @Override public void initialize(URL url, ResourceBundle rb) {
+        WeakEventHandler handler = new WeakEventHandler(viewHandler);
+        eventBus.addListener(EventTypes.SHOW_VIEW, handler);
+
+        List list = fieldTripService.getLocation();
+        var observableList = FXCollections.observableList(list);
+        locationsListView.setItems(observableList);
+    }
+
+    static class ViewHandler implements EventHandler<Event> {
+        @Override
+        public void handle(Event windowEvent) {
+            if (VIEW_NAME.equals(windowEvent.getEventType().getName()))
+                System.err.println("windowevent: " + windowEvent);
+        }
     }
 }

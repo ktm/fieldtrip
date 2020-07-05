@@ -1,8 +1,6 @@
 package org.gumball.events;
 
-import javafx.event.Event;
-import javafx.event.EventHandler;
-import javafx.event.WeakEventHandler;
+import javafx.event.*;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -11,26 +9,27 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class EventBus {
-    Map<Class, List<EventHandler>> listenerMap = null;
+public class EventBus implements EventDispatcher {
+    Map<EventType<?>, List<WeakEventHandler<Event>>> listenerMap;
 
     public EventBus() {
         listenerMap = new HashMap<>();
     }
 
-    public <T extends Event> void addListener(Class<T> clazz, WeakEventHandler<T> listener) {
-        List<EventHandler> list = listenerMap.get(clazz);
-        if (list == null) {
-            list = new ArrayList<>();
-            listenerMap.put(clazz, list);
-        }
+    public <T extends Event> void addListener(EventType<T> clazz, WeakEventHandler<Event> listener) {
+        List<WeakEventHandler<Event>> list = listenerMap.computeIfAbsent(clazz, k -> new ArrayList<>());
         list.add(listener);
     }
 
     public void fireEvent(Event event) {
-        Class c = event.getClass();
-        if (listenerMap.containsKey(c) == false)
+        if (!listenerMap.containsKey(event.getEventType()))
             return;
-        listenerMap.get(c).stream().forEach(eventHandler -> eventHandler.handle(event));
+        listenerMap.get(event.getEventType()).stream().forEach(eventHandler -> eventHandler.handle(event));
+    }
+
+    @Override
+    public Event dispatchEvent(Event event, EventDispatchChain eventDispatchChain) {
+        fireEvent(event);
+        return event;
     }
 }

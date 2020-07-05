@@ -1,13 +1,14 @@
 package org.gumball.events;
 
-import javafx.event.ActionEvent;
+import javafx.event.Event;
 
 
-public class LoadViewEvent extends ActionEvent {
+public class LoadViewEvent extends Event {
 
-    private String viewName = "";
+    private final String viewName;
 
     public LoadViewEvent(String arg) {
+        super(EventTypes.LOAD_VIEW);
         viewName = arg;
     }
 
