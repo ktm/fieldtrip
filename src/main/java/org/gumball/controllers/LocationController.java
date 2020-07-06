@@ -6,7 +6,10 @@ import javafx.event.EventHandler;
 import javafx.event.WeakEventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.cell.TextFieldListCell;
+import javafx.util.Callback;
 import org.gumball.entity.Location;
 import org.gumball.events.EventBus;
 import org.gumball.events.EventTypes;
@@ -44,6 +47,15 @@ public class LocationController implements Initializable {
         WeakEventHandler handler = new WeakEventHandler(viewHandler);
         eventBus.addListener(EventTypes.SHOW_VIEW, handler);
 
+        locationsListView.setCellFactory(
+                new Callback<ListView<Location>, ListCell<Location>>() {
+                    @Override
+                    public ListCell<Location> call(ListView<Location> list) {
+                        return new LocationCell();
+                    }
+                }
+        );
+
         List list = fieldTripService.getLocation();
         var observableList = FXCollections.observableList(list);
         locationsListView.setItems(observableList);
@@ -54,6 +66,18 @@ public class LocationController implements Initializable {
         public void handle(Event windowEvent) {
             if (VIEW_NAME.equals(windowEvent.getEventType().getName()))
                 System.err.println("windowevent: " + windowEvent);
+        }
+    }
+
+    static class LocationCell extends TextFieldListCell<Location> {
+        @Override
+        public void updateItem(Location item, boolean empty) {
+            if (item != null) {
+                setText(item.getName());
+            }
+            if (empty) {
+                setText("");
+            }
         }
     }
 }

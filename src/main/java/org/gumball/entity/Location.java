@@ -15,4 +15,8 @@ public class Location {
 
     private Long latitude;
     private Long longitude;
+
+    public String getName() {
+        return name;
+    }
 }
